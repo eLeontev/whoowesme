@@ -17,7 +17,6 @@ type Props = {
 }
 
 // TODO: add context to toggle sidebar
-
 const App: React.FunctionComponent<Props> = () => {
   /** Below comment has to be uncommented when login in complete */
   // const { loggedIn = false } = props;
@@ -36,36 +35,57 @@ const App: React.FunctionComponent<Props> = () => {
   const collapsed = localStorage.getItem('menu.is_collapsed')
   const openState = collapsed === 'yes'
   const [siderState, setSiderState] = useState(openState)
+  const [user, setUser] = useState('guest')
+
+  React.useEffect(() => {
+    const loginStatus = localStorage.getItem('token')
+
+    if (loginStatus !== '') {
+      setUser('authenticated')
+    }
+  }, [])
+
+  if (user === 'authenticated') {
+    return (
+      <Router>
+        <Provider store={store}>
+          <SiderContext.Provider
+            value={{
+              collapsed: siderState,
+              toggleSider: (): void => {
+                const newValue = collapsed === 'yes' ? 'no' : 'yes'
+                localStorage.setItem('menu.is_collapsed', newValue)
+                setSiderState(!siderState)
+              },
+            }}
+          >
+            <Switch>
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/add-friend" component={AddFriend} />
+              <Route path="/add-new-item" component={AddNewItem} />
+              <Route path="/send-invitation" component={SendInvitation} />
+              <Route path="/transaction/list" component={TransactionList} />
+              <Route path="/transaction/:id/edit" component={TransactionEdit} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/summary">
+                <ComingSoon title="Summary" />
+              </Route>
+              <Route component={PageNotFound} />
+            </Switch>
+          </SiderContext.Provider>
+        </Provider>
+      </Router>
+    )
+  }
 
   return (
     <Router>
       <Provider store={store}>
-        <SiderContext.Provider
-          value={{
-            collapsed: siderState,
-            toggleSider: (): void => {
-              const newValue = collapsed === 'yes' ? 'no' : 'yes'
-              localStorage.setItem('menu.is_collapsed', newValue)
-              setSiderState(!siderState)
-            },
-          }}
-        >
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/add-friend" component={AddFriend} />
-            <Route path="/add-new-item" component={AddNewItem} />
-            <Route path="/send-invitation" component={SendInvitation} />
-            <Route path="/transaction/list" component={TransactionList} />
-            <Route path="/transaction/:id/edit" component={TransactionEdit} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/summary">
-              <ComingSoon title="Summary" />
-            </Route>
-            <Route component={PageNotFound} />
-          </Switch>
-        </SiderContext.Provider>
+        <Switch>
+          <Route path="/" component={Login} />
+          <Route component={PageNotFound} />
+        </Switch>
       </Provider>
     </Router>
   )
