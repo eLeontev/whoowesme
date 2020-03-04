@@ -1,20 +1,16 @@
-import React, { FormEvent, useState } from 'react'
-import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Form } from '@ant-design/compatible'
+import React, { useState } from 'react'
+import { LockOutlined, UserOutlined, UnlockOutlined } from '@ant-design/icons'
+import { Form } from 'antd'
+import { Store } from 'rc-field-form/lib/interface'
 import '@ant-design/compatible/assets/index.css'
-import { Spin, Input, Button, Alert } from 'antd'
-import { FormComponentProps } from '@ant-design/compatible/lib/form'
+import { Input, message, Button } from 'antd'
 import { FormItemProps } from 'antd/lib/form'
 import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
 
-type Props = FormComponentProps
+type Props = {}
 
-const SpinnerIcon = <LoadingOutlined style={{ fontSize: '24px', color: '#ffffff' }} spin />
-
-const Login: React.FunctionComponent<Props> = props => {
-  const { form } = props
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+const Login: React.FunctionComponent<Props> = () => {
   const history = useHistory()
   const [usernameValidateStatus, setUsernameValidateStatus] = useState<FormItemProps['validateStatus']>('')
   const [passwordValidateStatus, setPasswordValidateStatus] = useState<FormItemProps['validateStatus']>('')
@@ -29,84 +25,90 @@ const Login: React.FunctionComponent<Props> = props => {
     setPasswordValidateStatus(feedback)
   }
 
-  const handleSubmit = (e: FormEvent): void => {
-    e.preventDefault()
-    setLoading(true)
+  const onFinish = (values: Store): void => {
+    const { username, password } = values
 
-    form.validateFields((err, values) => {
-      if (!err) {
-        const { username, password } = values
-
-        // TODO: Login with username, password
-        // attempt login with credentials
-        console.log({ username, password })
-        if (username === 'demo' && password === 'demo') {
-          // Redirect to login after success:
-          history.push('/dashboard')
-        } else {
-          setLoading(false)
-          setError('Invalid username or password.')
-        }
-      }
-    })
+    // TODO: Login with username, password
+    // attempt login with credentials
+    if (username === 'demo' && password === 'demo') {
+      history.push('/dashboard')
+    } else {
+      message.error('Please enter valid username and password.', 1.5)
+    }
   }
 
   return (
-    <Form
-      onSubmit={handleSubmit}
+    <StyledForm
+      name="login-form"
+      onFinish={onFinish}
+      initialValues={{
+        username: '',
+        password: '',
+      }}
       className="login-form"
-      style={{ width: '300px', margin: '0 auto', height: '100%' }}
     >
       <Form.Item style={{ textAlign: 'center' }}>
         <img src="/img/logo.png" alt="Who owes me" />
       </Form.Item>
-      {error && (
-        <Form.Item>
-          <Alert type="error" message="Invalid username or password" />
-        </Form.Item>
-      )}
-      <Form.Item hasFeedback extra="username: demo" validateStatus={usernameValidateStatus}>
-        {form.getFieldDecorator('username', {
-          initialValue: 'demo',
-          rules: [{ required: true, message: 'Please input your username!' }],
-        })(
-          <Input
-            prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-            style={{ height: '48px' }}
-            placeholder="Username"
-            onChange={(e): void => onUsernameChange(e.currentTarget.value)}
-          />,
-        )}
+      <Form.Item
+        hasFeedback
+        name="username"
+        extra="username: demo"
+        validateStatus={usernameValidateStatus}
+        rules={[{ required: true, message: 'Please input your username!' }]}
+      >
+        <StyledInput
+          prefix={<UserOutlined />}
+          placeholder="Username"
+          onChange={(e): void => onUsernameChange(e.currentTarget.value)}
+        />
       </Form.Item>
-      <Form.Item hasFeedback help="password: demo" validateStatus={passwordValidateStatus}>
-        {form.getFieldDecorator('password', {
-          initialValue: 'demo',
-          rules: [{ required: true, message: 'Please input your Password!' }],
-        })(
-          <Input
-            prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-            style={{ height: '48px' }}
-            type="password"
-            placeholder="Password"
-            onChange={(e): void => onPasswordChange(e.currentTarget.value)}
-          />,
-        )}
+      <Form.Item
+        hasFeedback
+        name="password"
+        extra="password: demo"
+        validateStatus={passwordValidateStatus}
+        rules={[{ required: true, message: 'Please input your Password!' }]}
+      >
+        <StyledInput
+          prefix={<LockOutlined />}
+          type="password"
+          placeholder="Password"
+          onChange={(e): void => onPasswordChange(e.currentTarget.value)}
+        />
       </Form.Item>
       <Form.Item>
-        <Button
+        <StyledLoginButton
           type="primary"
           htmlType="submit"
           className="login-form-button"
-          style={{ width: '100%', height: '50px' }}
+          icon={<UnlockOutlined />}
         >
-          {loading && <Spin indicator={SpinnerIcon} />}
-          {!loading && 'Log in'}
-        </Button>
+          Sign in
+        </StyledLoginButton>
       </Form.Item>
-    </Form>
+    </StyledForm>
   )
 }
 
-const LoginForm = Form.create({ name: 'login_form' })(Login)
+const StyledLoginButton = styled(Button)`
+  width: 100%;
+  height: 50px;
+`
+
+const StyledInput = styled(Input)`
+  height: 50px;
+  line-height: 38px;
+`
+
+const StyledForm = styled(Form)`
+  text-align: left;
+  min-width: 300px;
+  width: 300px;
+  height: 300px;
+  margin: auto auto;
+`
+
+const LoginForm = Login
 
 export default LoginForm
