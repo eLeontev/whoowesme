@@ -11,41 +11,37 @@ import AddNewItem from 'Pages/AddNewItem'
 import Dashboard from 'Pages/Dashboard'
 import { hot } from 'react-hot-loader/root'
 import { SiderContext } from 'Components/context'
+import { storage } from 'config'
 
 type Props = {
   loggedIn?: boolean
 }
 
-// TODO: add context to toggle sidebar
+const USER_TYPE_GUEST = 'guest'
+const USER_TYPE_MEMBER = 'member'
+
+type UserType = typeof USER_TYPE_GUEST | typeof USER_TYPE_MEMBER
+
 const App: React.FunctionComponent<Props> = () => {
-  /** Below comment has to be uncommented when login in complete */
-  // const { loggedIn = false } = props;
-
-  // if (!loggedIn) {
-  //   return (
-  //     <Router>
-  //       <Switch>
-  //         <Route component={Login} />
-  //         {/* <Route component={PageNotFound} /> */}
-  //       </Switch>
-  //     </Router>
-  //   );
-  // }
-
   const collapsed = localStorage.getItem('menu.is_collapsed')
   const openState = collapsed === 'yes'
   const [siderState, setSiderState] = useState(openState)
-  const [user, setUser] = useState('guest')
+  const [token, setToken] = useState('')
+  const [redirect, setRedirect] = useState('')
 
   React.useEffect(() => {
-    const loginStatus = localStorage.getItem('token')
+    const loginStatus = storage.get('token') || ''
 
-    if (loginStatus !== '') {
-      setUser('authenticated')
-    }
+    setToken(loginStatus)
   }, [])
 
-  if (user === 'authenticated') {
+  React.useEffect(() => {
+    if (token === USER_TYPE_MEMBER) {
+      setRedirect(USER_TYPE_MEMBER)
+    }
+  }, [token])
+
+  if (redirect === USER_TYPE_MEMBER) {
     return (
       <Router>
         <Provider store={store}>
@@ -54,7 +50,7 @@ const App: React.FunctionComponent<Props> = () => {
               collapsed: siderState,
               toggleSider: (): void => {
                 const newValue = collapsed === 'yes' ? 'no' : 'yes'
-                localStorage.setItem('menu.is_collapsed', newValue)
+                storage.add('menu.is_collapsed', newValue)
                 setSiderState(!siderState)
               },
             }}
@@ -81,12 +77,10 @@ const App: React.FunctionComponent<Props> = () => {
 
   return (
     <Router>
-      <Provider store={store}>
-        <Switch>
-          <Route path="/" component={Login} />
-          <Route component={PageNotFound} />
-        </Switch>
-      </Provider>
+      <Switch>
+        <Route path="/" component={Login} />
+        <Route component={PageNotFound} />
+      </Switch>
     </Router>
   )
 }

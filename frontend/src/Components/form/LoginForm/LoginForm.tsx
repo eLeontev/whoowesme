@@ -7,6 +7,7 @@ import { Input, message, Button } from 'antd'
 import { FormItemProps } from 'antd/lib/form'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+import { storage } from 'config'
 
 type Props = {}
 
@@ -32,7 +33,7 @@ const Login: React.FunctionComponent<Props> = () => {
     // attempt login with credentials
     if (username === 'demo' && password === 'demo') {
       message.success('Login successfully. Please wait ...')
-      localStorage.setItem('token', 'logged_in')
+      storage.add('token', 'member')
       history.push('/dashboard')
     } else {
       message.error('Please enter valid username and password.', 1.5)

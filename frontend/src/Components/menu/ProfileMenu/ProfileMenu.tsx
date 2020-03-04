@@ -2,10 +2,11 @@ import React from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { MessageOutlined, PoweroffOutlined, UserOutlined } from '@ant-design/icons'
-import { Icon as LegacyIcon } from '@ant-design/compatible'
+import { LogoutOutlined } from '@ant-design/icons'
 import { Menu, Modal } from 'antd'
 import { translate } from 'i18n'
 import TKeys from 'i18n/translationKey'
+import { storage } from 'config'
 import * as H from 'history'
 
 const StyledMenuLabel = styled('span')`
@@ -70,7 +71,7 @@ const onLogout = (history: H.History): void => {
   const logoutModal = Modal.confirm({
     title: 'Logout',
     content: 'You are about to logout from system.',
-    icon: <LegacyIcon type={'exit'} />,
+    icon: <LogoutOutlined />,
     onCancel: (): void => {
       /** No need to define body */
     },
@@ -80,8 +81,10 @@ const onLogout = (history: H.History): void => {
         cancelButtonProps: { disabled: true },
       })
 
+      storage.remove('token')
+
       // TODO: Send API request to logout then return success from here
-      history.push('/login')
+      history.push('/')
       Promise.resolve(true)
     },
   })
